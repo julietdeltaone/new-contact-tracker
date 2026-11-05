@@ -84,12 +84,9 @@ svg{display:block;width:100%;height:auto;max-width:330px;margin:0 auto}
 .lh .tag{font:12px var(--mono);color:var(--faint)}
 .lh .cnt{margin-left:auto;font:500 12px var(--mono);color:var(--muted)}
 .rows{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:12px 14px;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 12px;align-items:start;padding:12px 14px;border-top:1px solid var(--line)}
 .row:first-child{border-top:0}
 .row.flash{background:var(--panel2)}
-.row input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--faint);background:var(--bg);cursor:pointer;margin:2px 0 0;display:grid;place-content:center}
-.row input[type=checkbox]:checked{background:var(--c);border-color:var(--c)}
-.row input[type=checkbox]:checked::after{content:"";width:5px;height:10px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
 .row .t{font-weight:600}
 .row.on .t{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
 .row .ask{font-size:14.5px;margin-top:2px}
@@ -97,15 +94,15 @@ svg{display:block;width:100%;height:auto;max-width:330px;margin:0 auto}
 .row .then{font-size:13px;color:var(--muted);margin-top:2px}
 .row .then b{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:6px}
 .chip{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-left:8px}
-.note{background:none;border:0;color:var(--muted);font:500 12px var(--mono);cursor:pointer;padding:2px 0}
-.note:hover{color:var(--fg)}
-.row textarea{grid-column:2/4;width:100%;resize:none;overflow:hidden;min-height:50px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:14px;padding:8px 10px;margin-top:6px}
+.row textarea.ans{width:100%;resize:none;overflow:hidden;min-height:38px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:14px;padding:8px 10px;margin-top:8px}
+.row textarea.ans::placeholder{color:var(--faint)}
+.row.on textarea.ans{border-color:var(--c)}
 .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:18px}
 .rule{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--muted)}
 .rule b{display:block;color:var(--fg);font:700 14px var(--display)}
 [hidden]{display:none!important}
 @media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.left{position:static}}
-@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr)}.row .note{grid-column:2}}
+@media (max-width:480px){.row{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -162,7 +159,7 @@ function load(){try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r&&
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){msg='Could not save in this browser. Export a copy.'}}
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function fmt(d){if(!d)return '';const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
-function doneF(p,f){return !!((p.checks||{})[f.id]||((p.answers||{})[f.id]||'').trim())}
+function doneF(p,f){return !!(((p.answers||{})[f.id]||'').trim())}
 function cov(p,L){return L.fields.filter(f=>doneF(p,f)).length}
 function total(p){return ALL.filter(f=>doneF(p,f)).length}
 function askOf(p,f){return (p.relation==='professional'&&f.askp)||f.ask}
@@ -297,10 +294,10 @@ function drawRing(p){
   const nx=document.getElementById('next');nx.textContent='';
   nx.append(h('h3',{},'Ask next'));
   const picks=ALL.filter(f=>!doneF(p,f)&&unlocked(p,f.li)).slice(0,4);
-  if(!picks.length)nx.append(h('p',{class:'hold'},total(p)===20?'Every box is ticked. Re-ask the early ones in a few months.':'What is left sits in deeper layers. Build the early ones first.'));
+  if(!picks.length)nx.append(h('p',{class:'hold'},total(p)===20?'All 20 are filled in. Re-ask the early ones in a few months.':'What is left sits in deeper layers. Build the early ones first.'));
   picks.forEach(f=>nx.append(h('button',{class:'nx',onclick:()=>jump(f.L.id+'-'+f.id)},h('i',{style:'background:'+f.L.c}),h('div',{},askOf(p,f),h('small',{},f.L.name+' · '+(f.type==='watch'?'watch':'ask'))))));
   const nl=LAYERS.findIndex((L,li)=>!unlocked(p,li));
-  if(nl>=0)nx.append(h('p',{class:'hold'},LAYERS[nl].name+' waits until the first three layers are mostly ticked.'));
+  if(nl>=0)nx.append(h('p',{class:'hold'},LAYERS[nl].name+' waits until the first three layers are mostly filled in.'));
 }
 function autosize(ta){ta.style.height='auto';ta.style.height=Math.max(50,ta.scrollHeight+2)+'px'}
 function renderPerson(){
@@ -344,17 +341,13 @@ function renderPerson(){
     const cnt=h('span',{class:'cnt'},cov(p,L)+'/4');
     const rows=h('div',{class:'rows'},L.fields.map(f=>{
       const row=h('div',{class:'row'+(doneF(p,f)?' on':''),id:'f-'+L.id+'-'+f.id,style:'--c:'+L.c});
-      const cb=h('input',{type:'checkbox','aria-label':f.s,checked:!!p.checks[f.id],onchange:e=>{p.checks[f.id]=e.target.checked;row.classList.toggle('on',doneF(p,f));cnt.textContent=cov(p,L)+'/4';drawRing(p);touch()}});
+      const ta=h('textarea',{class:'ans',value:p.answers[f.id]||'',placeholder:f.type==='watch'?'What you noticed':'Their answer','aria-label':'Answer for '+f.s,oninput:e=>{p.answers[f.id]=e.target.value;row.classList.toggle('on',doneF(p,f));cnt.textContent=cov(p,L)+'/4';autosize(ta);drawRing(p);touch()}});
       const body=h('div',{style:'min-width:0'},
         h('div',{class:'t'},f.s,f.type==='watch'?h('span',{class:'chip'},'watch'):null),
         h('div',{class:'ask'},askOf(p,f)),
-        h('div',{class:'then'},h('b',{},f.type==='watch'?'note':'then'),f.then));
-      let ta=null;
-      const nb=h('button',{class:'note',onclick:()=>{
-        if(ta){ta.remove();ta=null;return}
-        ta=h('textarea',{value:p.answers[f.id]||'',placeholder:'What did they say?','aria-label':'Note for '+f.s,oninput:e=>{p.answers[f.id]=e.target.value;nb.textContent=e.target.value.trim()?'Note ●':'Note';row.classList.toggle('on',doneF(p,f));cnt.textContent=cov(p,L)+'/4';autosize(ta);drawRing(p);touch()}});
-        row.append(ta);autosize(ta);ta.focus();}},(p.answers[f.id]||'').trim()?'Note ●':'Note');
-      row.append(cb,body,nb);
+        h('div',{class:'then'},h('b',{},f.type==='watch'?'note':'then'),f.then),
+        ta);
+      row.append(body);
       return row;
     }));
     return h('section',{class:'layer'},h('div',{class:'lh'},h('h2',{},h('i',{style:'background:'+L.c}),L.name),h('span',{class:'tag'},L.tag),cnt),rows);
@@ -367,9 +360,10 @@ function renderPerson(){
     h('div',{class:'rules'},
       h('div',{class:'rule'},h('b',{},'Trade, do not extract'),'Answer your own question right after they answer it.'),
       h('div',{class:'rule'},h('b',{},'Follow the last thing they said'),'Your next question is a follow up, not the next line on this list.'),
-      h('div',{class:'rule'},h('b',{},'Deeper layers are earned'),'Values and Story come after the first three are mostly ticked.')),
+      h('div',{class:'rule'},h('b',{},'Deeper layers are earned'),'Values and Story come after the first three are mostly filled in.')),
     h('div',{class:'grid'},left,h('div',{},h('datalist',{id:'platforms'},PLATFORMS.map(x=>h('option',{value:x}))),form,layers)));
   drawRing(p);
+  document.querySelectorAll('textarea.ans').forEach(autosize);
 }
 function render(){view==='person'?renderPerson():renderTable()}
 load();render();

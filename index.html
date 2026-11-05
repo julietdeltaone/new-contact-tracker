@@ -72,6 +72,7 @@ td.over{color:var(--warn)}
 .mini i u{display:block;height:100%;background:var(--l1);transition:width .35s var(--ease)}
 .empty{padding:36px 16px;text-align:center;color:var(--muted)}
 .status{font:12px var(--mono);color:var(--faint);min-height:16px;margin-bottom:6px}
+.ver{font:500 11px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:rgba(255,255,255,.03)}
 .grid{display:grid;grid-template-columns:minmax(300px,350px) minmax(0,1fr);gap:26px;align-items:start}
 .left{position:sticky;top:86px;display:flex;flex-direction:column;gap:16px;min-width:0}
 .card{border-radius:16px;padding:16px}
@@ -181,6 +182,8 @@ svg.ring{display:block;width:100%;height:auto;max-width:330px;margin:0 auto}
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <script>
 const KEY='people-tracker-v1',SKEY='people-tracker-schema-v1';
+const VERSION='2.0.0';
+function verBadge(){return h('span',{class:'ver'},'V'+VERSION)}
 const DEFAULT_SCHEMA=[
  {id:'l1',name:'Context',tag:'Minutes · just ask',c:'#3ad6b5',fields:[
   {id:'home',s:'Where they are from',ask:'"Are you from around here?"',then:'"What was that like?"'},
@@ -422,7 +425,7 @@ function renderTable(){
       h('button',{class:'btn',onclick:exportJSON},'Export JSON'),
       h('button',{class:'btn',onclick:exportCSV},'Export CSV'),
       h('button',{class:'btn',onclick:()=>document.getElementById('importFile').click()},'Import JSON'),
-      h('button',{class:'btn',onclick:openHelp},'Keys',h('span',{class:'k'},'?'))));
+      h('button',{class:'btn',onclick:openHelp},'Keys',h('span',{class:'k'},'?')),verBadge()));
   const tools=h('div',{class:'bar',style:'margin-bottom:12px'},
     nameIn,h('button',{class:'btn primary',onclick:add},'Add'),
     h('input',{class:'in',id:'searchBox',placeholder:'Search  ( / )',value:q,'aria-label':'Search',oninput:e=>{q=e.target.value;renderBody(e.target)}}),
@@ -532,7 +535,7 @@ function renderPerson(){
     else{data.people=data.people.filter(x=>x.id!==p.id);save();view='table';render()}}},'Remove');
   const kinds=h('div',{class:'seg2'},['personal','professional'].map(k=>h('button',{'aria-pressed':p.relation===k?'true':'false',onclick:()=>{p.relation=k;touch();render()}},k==='personal'?'Personal':'Professional')));
   const head=h('div',{class:'phead glass'},back,h('input',{class:'nm',value:p.name,maxlength:'60','aria-label':'Name',oninput:e=>{p.name=e.target.value;touch()}}),kinds,
-    h('button',{class:'btn',onclick:openPalette},'Jump',h('span',{class:'k'},'⌘K')),del);
+    h('button',{class:'btn',onclick:openPalette},'Jump',h('span',{class:'k'},'⌘K')),del,verBadge());
   const nq=nextQuestion(p);
   const rapid=rapidOn?h('div',{class:'rapid glass'},
     nq?h('div',{class:'rq'},h('span',{class:'lq',style:'color:'+nq.L.c},nq.L.name),h('b',{},nq.s),' — ',askOf(p,nq)):h('div',{class:'rq'},'Everything is filled in.'),

@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>People Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d1016;--panel:#141923;--panel2:#1a2030;--line:#262d3f;--fg:#e9ecf3;--muted:#8a93a8;--faint:#5b647a;--warn:#ffb08a;
+  --l1:#3ad6b5;--l2:#6db8ee;--l3:#a595f3;--l4:#f291b4;--l5:#ff8a63;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"Hanken Grotesk","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);padding:20px 16px 56px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:26px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--l2);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--fg);font-weight:500;font-size:14px;padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:#3a4360}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.danger{color:#ff9d8a}
+.in,.sel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.stat b{display:block;font:500 22px var(--mono)}
+.stat span{font-size:12px;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:860px}
+th{position:sticky;top:0;text-align:left;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;background:var(--panel)}
+th:hover{color:var(--fg)}
+td{padding:10px 12px;border-top:1px solid var(--line);white-space:nowrap}
+tr.r{cursor:pointer}
+tr.r:hover td{background:var(--panel2)}
+td.nm{font-weight:600}
+td.over{color:var(--warn)}
+.pill{font:500 11px var(--mono);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.pill.new{color:var(--l1);border-color:var(--l1)}
+.pill.active{color:var(--l2);border-color:var(--l2)}
+.pill.fading{color:var(--l5);border-color:var(--l5)}
+.mini{display:inline-flex;align-items:center;gap:8px}
+.mini i{display:block;width:60px;height:6px;background:var(--panel2);border-radius:3px;overflow:hidden}
+.mini i u{display:block;height:100%;background:var(--l1)}
+.empty{padding:36px 16px;text-align:center;color:var(--muted)}
+.status{font:12px var(--mono);color:var(--faint)}
+.grid{display:grid;grid-template-columns:minmax(300px,350px) minmax(0,1fr);gap:26px;align-items:start}
+.left{position:sticky;top:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+svg{display:block;width:100%;height:auto;max-width:330px;margin:0 auto}
+.seg{stroke:var(--line);stroke-width:1;cursor:pointer}
+.seg:hover{opacity:.75}
+.legend{display:grid;gap:6px;margin-top:12px}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.lg i{width:10px;height:10px;border-radius:3px}
+.lg b{margin-left:auto;font:500 12px var(--mono);color:var(--fg)}
+.next h3{font-size:16px;margin-bottom:8px}
+.nx{display:flex;gap:10px;padding:10px 0;border:0;border-top:1px solid var(--line);cursor:pointer;text-align:left;background:none;width:100%}
+.nx:first-of-type{border-top:0}
+.nx i{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:none}
+.nx small{display:block;font:11px var(--mono);color:var(--faint)}
+.hold{color:var(--muted);font-size:13px;margin:8px 0 0}
+.phead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.phead input.nm{flex:1 1 200px;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);font:700 24px var(--display);padding:4px 0;border-radius:0}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg2 button{background:var(--panel);color:var(--muted);border:0;font-size:13px;padding:7px 12px;cursor:pointer}
+.seg2 button[aria-pressed="true"]{background:var(--panel2);color:var(--fg)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.form label{display:block;font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.form .in,.form .sel{width:100%}
+.form .wide{grid-column:1/-1}
+.form textarea{width:100%;min-height:80px;resize:vertical}
+.layer{margin-bottom:22px}
+.lh{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin-bottom:8px}
+.lh h2{font-size:18px;display:flex;align-items:center;gap:9px}
+.lh h2 i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.lh .tag{font:12px var(--mono);color:var(--faint)}
+.lh .cnt{margin-left:auto;font:500 12px var(--mono);color:var(--muted)}
+.rows{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:12px 14px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.flash{background:var(--panel2)}
+.row input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:6px;border:1.5px solid var(--faint);background:var(--bg);cursor:pointer;margin:2px 0 0;display:grid;place-content:center}
+.row input[type=checkbox]:checked{background:var(--c);border-color:var(--c)}
+.row input[type=checkbox]:checked::after{content:"";width:5px;height:10px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.row .t{font-weight:600}
+.row.on .t{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
+.row .ask{font-size:14.5px;margin-top:2px}
+.row.on .ask{color:var(--faint)}
+.row .then{font-size:13px;color:var(--muted);margin-top:2px}
+.row .then b{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-right:6px}
+.chip{font:500 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-left:8px}
+.note{background:none;border:0;color:var(--muted);font:500 12px var(--mono);cursor:pointer;padding:2px 0}
+.note:hover{color:var(--fg)}
+.row textarea{grid-column:2/4;width:100%;resize:none;overflow:hidden;min-height:50px;background:var(--bg);border:1px solid var(--line);border-radius:8px;font-size:14px;padding:8px 10px;margin-top:6px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:18px}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--muted)}
+.rule b{display:block;color:var(--fg);font:700 14px var(--display)}
+[hidden]{display:none!important}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}.left{position:static}}
+@media (max-width:480px){.row{grid-template-columns:auto minmax(0,1fr)}.row .note{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+<script>
+const KEY='people-tracker-v1';
+const LAYERS=[
+ {id:'l1',name:'Context',tag:'Minutes · just ask',c:'var(--l1)',fields:[
+  {id:'home',s:'Where they are from',ask:'"Are you from around here?"',then:'"What was that like?"'},
+  {id:'work',s:'What they do',ask:'"What do you do?"',askp:'"What is your role, and how long have you been in it?"',then:'"How did you get into that?"'},
+  {id:'people',s:'Who is in their life',ask:'"Do you have family or friends nearby?"',askp:'"Who do you work with most?"',then:'"Who do you see most?"'},
+  {id:'rhythm',s:'Typical week',ask:'"What does a normal week look like for you?"',askp:'"When is your busiest stretch?"',then:'"What do you protect time for?"'}]},
+ {id:'l2',name:'Style',tag:'Minutes · watch, do not ask',c:'var(--l2)',fields:[
+  {id:'comm',s:'How they communicate',type:'watch',ask:'Short or long? Direct or diplomatic? Text or call?',then:'Note how they open and close a conversation.'},
+  {id:'energy',s:'Pace and energy',type:'watch',ask:'Fast or deliberate? Talker or listener?',then:'Who fills the silence?'},
+  {id:'humor',s:'Humor',type:'watch',ask:'Dry, playful, self-deprecating, none?',then:'What gets a real laugh?'},
+  {id:'friction',s:'Under pressure',type:'watch',ask:'How they act when stressed or when they disagree.',then:'Only log what you have actually seen.'}]},
+ {id:'l3',name:'Current chapter',tag:'First hour · ask, then follow up',c:'var(--l3)',fields:[
+  {id:'project',s:'What they are working on',ask:'"What are you working on lately?"',then:'"What is the hardest part?"'},
+  {id:'goal',s:'What they are aiming at',ask:'"What are you trying to get done this year?"',then:'"Why that, and why now?"'},
+  {id:'strain',s:'What is weighing on them',ask:'"What has been the hardest part of this stretch?"',then:'"What would make it lighter?"'},
+  {id:'look',s:'What they look forward to',ask:'"Anything you are looking forward to?"',then:'"Who will you do it with?"'}]},
+ {id:'l4',name:'Values',tag:'Weeks · needs sharing both ways',c:'var(--l4)',fields:[
+  {id:'hill',s:'What they will not bend on',ask:'"What is a hill you would die on?"',then:'"When did that get tested?"'},
+  {id:'invest',s:'Where time and money go',ask:'"Free Saturday, no obligations. What do you do?"',then:'"What would you cut last?"'},
+  {id:'admire',s:'Who they admire',ask:'"Who do you look up to?"',then:'"What do you copy from them?"'},
+  {id:'proud',s:'What they are proud of',ask:'"What are you proud of that people do not usually ask about?"',then:'"Who knows about it?"'}]},
+ {id:'l5',name:'Story',tag:'Months or more · needs earned trust',c:'var(--l5)',fields:[
+  {id:'turning',s:'Turning points',ask:'"What is a moment that changed your direction?"',then:'"What did you do the next day?"'},
+  {id:'shaped',s:'What shaped them',ask:'"Who shaped how you think?"',then:'"What did you take from them?"'},
+  {id:'fear',s:'Fears and avoidance',ask:'"What worries you more than it probably should?"',then:'Share one of yours first.'},
+  {id:'legacy',s:'What they want to be known for',ask:'"What do you want to be known for?"',then:'"Who would say that about you?"'}]}
+];
+const ALL=LAYERS.flatMap((L,li)=>L.fields.map(f=>({...f,li,L})));
+const NS='http://www.w3.org/2000/svg';
+const PLATFORMS=['Instagram','X','LinkedIn','Facebook','TikTok','Snapchat','Discord','WhatsApp','Text','Email'];
+
+let data={people:[]},view='table',selId=null,q='',fStatus='',sortK='met',sortDir=-1,msg='';
+
+function h(tag,props,...kids){
+  const e=document.createElement(tag);
+  for(const [k,v] of Object.entries(props||{})){
+    if(v==null||v===false)continue;
+    if(k==='class')e.className=v;
+    else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+    else if(k==='value'||k==='checked'||k==='hidden')e[k]=v;
+    else e.setAttribute(k,v===true?'':v);
+  }
+  kids.flat().forEach(c=>{if(c==null||c===false)return;e.append(c.nodeType?c:document.createTextNode(String(c)))});
+  return e;
+}
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r&&Array.isArray(r.people))data=r}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){msg='Could not save in this browser. Export a copy.'}}
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function fmt(d){if(!d)return '';const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}
+function doneF(p,f){return !!((p.checks||{})[f.id]||((p.answers||{})[f.id]||'').trim())}
+function cov(p,L){return L.fields.filter(f=>doneF(p,f)).length}
+function total(p){return ALL.filter(f=>doneF(p,f)).length}
+function askOf(p,f){return (p.relation==='professional'&&f.askp)||f.ask}
+function newPerson(name){return{id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,handle:'',platform:'',met:today(),mode:'in-person',onlineDate:'',where:'',intro:'',relation:'personal',status:'new',lastContact:today(),followUp:'',birthday:'',location:'',phone:'',email:'',tags:'',notes:'',checks:{},answers:{},created:Date.now()}}
+
+/* export and import */
+function download(name,text,type){
+  const a=h('a',{href:URL.createObjectURL(new Blob([text],{type})),download:name});
+  document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+function exportJSON(){download('people-tracker-'+today()+'.json',JSON.stringify({exported:new Date().toISOString(),people:data.people},null,2),'application/json')}
+function exportCSV(){
+  const cols=['name','handle','platform','met','mode','onlineDate','where','intro','relation','status','lastContact','followUp','birthday','location','phone','email','tags','notes'];
+  const esc=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows=[cols.concat(['mapCount']).map(esc).join(',')].concat(data.people.map(p=>cols.map(c=>esc(p[c])).concat([esc(total(p))]).join(',')));
+  download('people-tracker-'+today()+'.csv',rows.join('\n'),'text/csv');
+}
+document.getElementById('importFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const j=JSON.parse(r.result);const list=Array.isArray(j)?j:j.people;
+      if(!Array.isArray(list))throw 0;
+      let n=0;
+      list.forEach(x=>{if(!x||!x.name)return;const base=newPerson(x.name);const p={...base,...x};p.id=x.id||base.id;p.checks=x.checks||{};p.answers=x.answers||{};
+        const i=data.people.findIndex(y=>y.id===p.id);if(i>=0)data.people[i]=p;else data.people.push(p);n++});
+      save();msg='Imported '+n+' people.';
+    }catch(err){msg='That file is not a People Tracker export.'}
+    e.target.value='';render();
+  };
+  r.readAsText(f);
+});
+
+/* table view */
+const COLS=[
+ {k:'name',l:'Name',v:p=>p.name},
+ {k:'handle',l:'Handle',v:p=>p.handle},
+ {k:'met',l:'Met',v:p=>p.met},
+ {k:'mode',l:'How',v:p=>p.mode},
+ {k:'where',l:'Where',v:p=>p.where},
+ {k:'lastContact',l:'Last contact',v:p=>p.lastContact},
+ {k:'followUp',l:'Follow up',v:p=>p.followUp},
+ {k:'map',l:'Map',v:p=>total(p)},
+ {k:'status',l:'Status',v:p=>p.status}
+];
+function matches(p){
+  if(fStatus&&p.status!==fStatus)return false;
+  if(!q)return true;
+  const s=[p.name,p.handle,p.platform,p.where,p.intro,p.tags,p.notes,p.location].join(' ').toLowerCase();
+  return s.includes(q.toLowerCase());
+}
+function renderTable(){
+  const t=today();
+  const list=data.people.filter(matches);
+  const col=COLS.find(c=>c.k===sortK)||COLS[2];
+  list.sort((a,b)=>{const x=col.v(a),y=col.v(b);if(x===y)return 0;if(x===''||x==null)return 1;if(y===''||y==null)return -1;return (x>y?1:-1)*sortDir});
+  const month=t.slice(0,7);
+  const stats=h('div',{class:'stats'},
+    h('div',{class:'stat'},h('b',{},data.people.length),h('span',{},'People')),
+    h('div',{class:'stat'},h('b',{},data.people.filter(p=>(p.met||'').startsWith(month)).length),h('span',{},'Met this month')),
+    h('div',{class:'stat'},h('b',{},data.people.filter(p=>p.mode!=='in-person').length),h('span',{},'Met online')),
+    h('div',{class:'stat'},h('b',{},data.people.filter(p=>p.followUp&&p.followUp<=t).length),h('span',{},'Follow ups due')));
+  const nameIn=h('input',{class:'in',placeholder:'New person',id:'newName',maxlength:'60','aria-label':'New person name',onkeydown:e=>{if(e.key==='Enter')add()}});
+  const add=()=>{const n=nameIn.value.trim();if(!n)return;const p=newPerson(n);data.people.push(p);save();selId=p.id;view='person';msg='';render()};
+  const top=h('div',{class:'top'},h('h1',{},'People Tracker'),
+    h('div',{class:'bar'},
+      h('button',{class:'btn',onclick:exportJSON},'Export JSON'),
+      h('button',{class:'btn',onclick:exportCSV},'Export CSV'),
+      h('button',{class:'btn',onclick:()=>document.getElementById('importFile').click()},'Import JSON')));
+  const tools=h('div',{class:'bar',style:'margin-bottom:12px'},
+    nameIn,h('button',{class:'btn primary',onclick:add},'Add'),
+    h('input',{class:'in',placeholder:'Search',value:q,'aria-label':'Search',oninput:e=>{q=e.target.value;renderBody(e.target)}}),
+    (()=>{const s=h('select',{class:'sel','aria-label':'Status',onchange:e=>{fStatus=e.target.value;render()}},
+      ['','new','active','fading','paused'].map(v=>h('option',{value:v,selected:fStatus===v},v||'All statuses')));return s})());
+  const head=h('tr',{},COLS.map(c=>h('th',{onclick:()=>{if(sortK===c.k)sortDir*=-1;else{sortK=c.k;sortDir=1}render()}},c.l+(sortK===c.k?(sortDir>0?' ↑':' ↓'):''))));
+  const body=h('tbody',{},list.map(p=>h('tr',{class:'r',tabindex:'0',onclick:()=>{selId=p.id;view='person';render()},onkeydown:e=>{if(e.key==='Enter'){selId=p.id;view='person';render()}}},
+    h('td',{class:'nm'},p.name),
+    h('td',{},p.handle?(p.platform?p.platform+' ':'')+p.handle:''),
+    h('td',{},fmt(p.met)),
+    h('td',{},p.mode==='in-person'?'In person':p.mode==='online'?'Online'+(p.onlineDate?' '+fmt(p.onlineDate):''):'Both'+(p.onlineDate?' '+fmt(p.onlineDate):'')),
+    h('td',{},p.where),
+    h('td',{},fmt(p.lastContact)),
+    h('td',{class:p.followUp&&p.followUp<=t?'over':''},fmt(p.followUp)),
+    h('td',{},h('span',{class:'mini'},h('i',{},h('u',{style:'width:'+(total(p)/20*100)+'%'})),total(p)+'/20')),
+    h('td',{},h('span',{class:'pill '+p.status},p.status)))));
+  const tbl=h('div',{class:'tablewrap'},h('table',{},h('thead',{},head),body));
+  const emptyMsg=!list.length?h('div',{class:'empty'},data.people.length?'No one matches that search.':'No one yet. Add the first person above, or import a JSON export.'):null;
+  const root=document.getElementById('app');root.textContent='';
+  root.append(top,h('div',{class:'status'},msg),stats,tools,tbl,emptyMsg);
+}
+function renderBody(inputEl){ // keep focus while searching
+  const pos=inputEl.selectionStart;render();
+  const n=[...document.querySelectorAll('input.in')].find(x=>x.getAttribute('aria-label')==='Search');
+  if(n){n.focus();n.setSelectionRange(pos,pos)}
+}
+
+/* person view */
+function arc(r0,r1,a0,a1){
+  const pt=(r,a)=>[180+r*Math.cos(a*Math.PI/180),180+r*Math.sin(a*Math.PI/180)];
+  const [x1,y1]=pt(r1,a0),[x2,y2]=pt(r1,a1),[x3,y3]=pt(r0,a1),[x4,y4]=pt(r0,a0);
+  return `M${x1} ${y1}A${r1} ${r1} 0 0 1 ${x2} ${y2}L${x3} ${y3}A${r0} ${r0} 0 0 0 ${x4} ${y4}Z`;
+}
+function unlocked(p,li){
+  if(li<3)return true;
+  const fast=[0,1,2].reduce((a,i)=>a+cov(p,LAYERS[i]),0)/12;
+  if(li===3)return fast>=0.6;
+  return fast>=0.6&&cov(p,LAYERS[3])/4>=0.5;
+}
+function jump(key){
+  const row=document.getElementById('f-'+key);if(!row)return;
+  row.scrollIntoView({behavior:'smooth',block:'center'});
+  row.classList.add('flash');setTimeout(()=>row.classList.remove('flash'),900);
+}
+function drawRing(p){
+  const svg=document.getElementById('ring');svg.textContent='';
+  LAYERS.forEach((L,li)=>{
+    const r1=172-li*28,r0=r1-24;
+    L.fields.forEach((f,fi)=>{
+      const a0=-90+fi*90+1.5;
+      const el=document.createElementNS(NS,'path');
+      el.setAttribute('d',arc(r0,r1,a0,a0+87));el.setAttribute('class','seg');
+      el.setAttribute('fill',doneF(p,f)?`var(--l${li+1})`:'var(--panel2)');
+      const t=document.createElementNS(NS,'title');t.textContent=L.name+': '+f.s;el.append(t);
+      el.addEventListener('click',()=>jump(L.id+'-'+f.id));svg.append(el);
+    });
+  });
+  const tx=(y,s,size,fill)=>{const c=document.createElementNS(NS,'text');c.setAttribute('x',180);c.setAttribute('y',y);c.setAttribute('text-anchor','middle');c.setAttribute('fill',fill);c.setAttribute('font-family','JetBrains Mono, monospace');c.setAttribute('font-size',size);c.textContent=s;svg.append(c)};
+  tx(176,total(p),20,'var(--fg)');tx(194,'of 20',11,'var(--muted)');
+  const lg=document.getElementById('legend');lg.textContent='';
+  LAYERS.forEach(L=>lg.append(h('div',{class:'lg'},h('i',{style:'background:'+L.c}),L.name,h('b',{},cov(p,L)+'/4'))));
+  const nx=document.getElementById('next');nx.textContent='';
+  nx.append(h('h3',{},'Ask next'));
+  const picks=ALL.filter(f=>!doneF(p,f)&&unlocked(p,f.li)).slice(0,4);
+  if(!picks.length)nx.append(h('p',{class:'hold'},total(p)===20?'Every box is ticked. Re-ask the early ones in a few months.':'What is left sits in deeper layers. Build the early ones first.'));
+  picks.forEach(f=>nx.append(h('button',{class:'nx',onclick:()=>jump(f.L.id+'-'+f.id)},h('i',{style:'background:'+f.L.c}),h('div',{},askOf(p,f),h('small',{},f.L.name+' · '+(f.type==='watch'?'watch':'ask'))))));
+  const nl=LAYERS.findIndex((L,li)=>!unlocked(p,li));
+  if(nl>=0)nx.append(h('p',{class:'hold'},LAYERS[nl].name+' waits until the first three layers are mostly ticked.'));
+}
+function autosize(ta){ta.style.height='auto';ta.style.height=Math.max(50,ta.scrollHeight+2)+'px'}
+function renderPerson(){
+  const p=data.people.find(x=>x.id===selId);
+  if(!p){view='table';return render()}
+  const touch=()=>{p.updated=Date.now();save()};
+  const field=(k,label,type,opts)=>{
+    const id='fd-'+k;
+    let el;
+    if(type==='select')el=h('select',{class:'sel',id,onchange:e=>{p[k]=e.target.value;touch();if(k==='mode')onl.hidden=p.mode==='in-person'}},opts.map(o=>h('option',{value:o,selected:p[k]===o},o)));
+    else if(type==='textarea')el=h('textarea',{class:'in',id,value:p[k]||'',oninput:e=>{p[k]=e.target.value;touch()}});
+    else el=h('input',{class:'in',id,type:type||'text',value:p[k]||'',list:k==='platform'?'platforms':null,oninput:e=>{p[k]=e.target.value;touch()}});
+    return h('div',{class:type==='textarea'?'wide':''},h('label',{for:id},label),el);
+  };
+  const onl=field('onlineDate','Date first connected online','date');onl.hidden=p.mode==='in-person';
+  const back=h('button',{class:'btn',onclick:()=>{view='table';render()}},'← All people');
+  let armed=false;
+  const del=h('button',{class:'btn danger',onclick:e=>{
+    if(!armed){armed=true;e.target.textContent='Click again to remove';setTimeout(()=>{armed=false;e.target.textContent='Remove'},3000)}
+    else{data.people=data.people.filter(x=>x.id!==p.id);save();view='table';render()}}},'Remove');
+  const kinds=h('div',{class:'seg2'},['personal','professional'].map(k=>h('button',{'aria-pressed':p.relation===k?'true':'false',onclick:()=>{p.relation=k;touch();render()}},k==='personal'?'Personal':'Professional')));
+  const head=h('div',{class:'phead'},back,h('input',{class:'nm',value:p.name,maxlength:'60','aria-label':'Name',oninput:e=>{p.name=e.target.value;touch()}}),kinds,del);
+  const form=h('div',{class:'form'},
+    field('met','When we met','date'),
+    field('mode','How we met','select',['in-person','online','both']),
+    onl,
+    field('where','Where or how we met','text'),
+    field('intro','Introduced by','text'),
+    field('platform','Platform','text'),
+    field('handle','Handle','text'),
+    field('status','Status','select',['new','active','fading','paused']),
+    field('lastContact','Last contact','date'),
+    field('followUp','Follow up by','date'),
+    field('birthday','Birthday','date'),
+    field('location','Location','text'),
+    field('phone','Phone','tel'),
+    field('email','Email','email'),
+    field('tags','Tags (comma separated)','text'),
+    field('notes','Notes','textarea'));
+  const layers=LAYERS.map(L=>{
+    const cnt=h('span',{class:'cnt'},cov(p,L)+'/4');
+    const rows=h('div',{class:'rows'},L.fields.map(f=>{
+      const row=h('div',{class:'row'+(doneF(p,f)?' on':''),id:'f-'+L.id+'-'+f.id,style:'--c:'+L.c});
+      const cb=h('input',{type:'checkbox','aria-label':f.s,checked:!!p.checks[f.id],onchange:e=>{p.checks[f.id]=e.target.checked;row.classList.toggle('on',doneF(p,f));cnt.textContent=cov(p,L)+'/4';drawRing(p);touch()}});
+      const body=h('div',{style:'min-width:0'},
+        h('div',{class:'t'},f.s,f.type==='watch'?h('span',{class:'chip'},'watch'):null),
+        h('div',{class:'ask'},askOf(p,f)),
+        h('div',{class:'then'},h('b',{},f.type==='watch'?'note':'then'),f.then));
+      let ta=null;
+      const nb=h('button',{class:'note',onclick:()=>{
+        if(ta){ta.remove();ta=null;return}
+        ta=h('textarea',{value:p.answers[f.id]||'',placeholder:'What did they say?','aria-label':'Note for '+f.s,oninput:e=>{p.answers[f.id]=e.target.value;nb.textContent=e.target.value.trim()?'Note ●':'Note';row.classList.toggle('on',doneF(p,f));cnt.textContent=cov(p,L)+'/4';autosize(ta);drawRing(p);touch()}});
+        row.append(ta);autosize(ta);ta.focus();}},(p.answers[f.id]||'').trim()?'Note ●':'Note');
+      row.append(cb,body,nb);
+      return row;
+    }));
+    return h('section',{class:'layer'},h('div',{class:'lh'},h('h2',{},h('i',{style:'background:'+L.c}),L.name),h('span',{class:'tag'},L.tag),cnt),rows);
+  });
+  const left=h('div',{class:'left'},
+    h('div',{class:'card'},(()=>{const s=document.createElementNS(NS,'svg');s.setAttribute('id','ring');s.setAttribute('viewBox','0 0 360 360');s.setAttribute('role','img');s.setAttribute('aria-label','Rings showing how much is known about this person');return s})(),h('div',{class:'legend',id:'legend'})),
+    h('div',{class:'card next',id:'next'}));
+  const root=document.getElementById('app');root.textContent='';
+  root.append(head,
+    h('div',{class:'rules'},
+      h('div',{class:'rule'},h('b',{},'Trade, do not extract'),'Answer your own question right after they answer it.'),
+      h('div',{class:'rule'},h('b',{},'Follow the last thing they said'),'Your next question is a follow up, not the next line on this list.'),
+      h('div',{class:'rule'},h('b',{},'Deeper layers are earned'),'Values and Story come after the first three are mostly ticked.')),
+    h('div',{class:'grid'},left,h('div',{},h('datalist',{id:'platforms'},PLATFORMS.map(x=>h('option',{value:x}))),form,layers)));
+  drawRing(p);
+}
+function render(){view==='person'?renderPerson():renderTable()}
+load();render();
+</script>
+</body>
+</html>
